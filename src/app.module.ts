@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'dev' ? '.dev.env' : '.test.env',
+      ignoreEnvFile: process.env.NODE_ENV === 'prod',
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
