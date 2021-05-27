@@ -8,13 +8,20 @@ export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @Query(returns => [Restaurant])
-  myRestaurant(@Args('veganOnly') veganOnly: boolean): Restaurant[] {
-    console.log(veganOnly);
-    return [];
+  myRestaurant(): Promise<Restaurant[]> {
+    return this.restaurantService.getAll();
   }
 
   @Mutation(returns => Boolean)
-  createRestaurant(@Args() createRestaurantArgs: CreateRestaurantDto): boolean {
+  async createRestaurant(
+    @Args() createRestaurantArgs: CreateRestaurantDto,
+  ): Promise<boolean> {
+    try {
+      await this.restaurantService.createRestaurant(createRestaurantArgs);
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
     return true;
   }
 }
