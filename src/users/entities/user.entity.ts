@@ -9,6 +9,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { ErrorMessage } from 'src/error/error_message';
+import { IsEmail, IsEnum } from 'class-validator';
 
 enum UserRole {
   OWNER,
@@ -24,6 +25,7 @@ registerEnumType(UserRole, { name: 'UserRole' });
 export class User extends CoreEntity {
   @Column()
   @Field(type => String)
+  @IsEmail()
   email: string;
 
   @Column()
@@ -36,6 +38,7 @@ export class User extends CoreEntity {
     default: UserRole.CLIENT,
   })
   @Field(type => UserRole, { defaultValue: UserRole.CLIENT })
+  @IsEnum(UserRole)
   role: UserRole;
 
   @BeforeInsert()
@@ -44,6 +47,14 @@ export class User extends CoreEntity {
       this.password = await bcrypt.hash(this.password, 10);
     } catch (error) {
       throw new InternalServerErrorException(ErrorMessage.HASH_PASSWORD_ERROR);
+    }
+  }
+
+  async checkPassword(password: string): Promise<Boolean> {
+    try {
+      return await bcrypt.compare(password, this.password);
+    } catch (error) {
+      throw new InternalServerErrorException(ErrorMessage.LOGIN_ERROR);
     }
   }
 }
