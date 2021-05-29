@@ -15,6 +15,7 @@ import { User } from './users/entities/user.entity';
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod'),
+        TOKEN_SECRET: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRoot({

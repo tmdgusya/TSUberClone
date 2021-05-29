@@ -9,13 +9,14 @@ import {
 import { ErrorMessage } from 'src/error/error_message';
 import { Args, Mutation } from '@nestjs/graphql';
 import { LoginOutput, LoginInputType } from './dtos/login-account.dto';
-import * as bcrypt from 'bcrypt';
-import { boolean } from 'joi';
+import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly config: ConfigService,
   ) {}
 
   async createAccount({
@@ -67,8 +68,11 @@ export class UserService {
         };
       }
 
+      const token = jwt.sign({ id: user.id }, this.config.get('TOKEN_SECRET'));
+
       return {
         ok: true,
+        token,
       };
     } catch (error) {
       return {
