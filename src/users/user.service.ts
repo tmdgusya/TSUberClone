@@ -1,9 +1,16 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
-import { CreateAccountInput } from './dtos/create-account.dto';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  CreateAccountInput,
+  CreateAccountOutput,
+} from './dtos/create-account.dto';
 import { ErrorMessage } from 'src/error/error_message';
+import { Args, Mutation } from '@nestjs/graphql';
+import { LoginOutput, LoginInputType } from './dtos/login-account.dto';
+import * as bcrypt from 'bcrypt';
+import { boolean } from 'joi';
 
 @Injectable()
 export class UserService {
@@ -15,7 +22,7 @@ export class UserService {
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
+  }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
       const oldUser = await this.userRepository.findOne({ email });
       if (oldUser) {
@@ -35,5 +42,39 @@ export class UserService {
     return {
       ok: true,
     };
+  }
+
+  @Mutation(returns => LoginOutput)
+  async login(
+    @Args('input') { email, password }: LoginInputType,
+  ): Promise<LoginOutput> {
+    try {
+      const user = await this.userRepository.findOne({ email });
+
+      if (!user) {
+        return {
+          ok: false,
+          error: ErrorMessage.LOGIN_ERROR,
+        };
+      }
+
+      const isCorrectPassword: Boolean = await user.checkPassword(password);
+
+      if (!isCorrectPassword) {
+        return {
+          ok: false,
+          error: ErrorMessage.LOGIN_ERROR,
+        };
+      }
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
   }
 }
