@@ -3,6 +3,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { CreateAccountInput } from './dtos/create-account.dto';
+import { ErrorMessage } from 'src/error/error_message';
 
 @Injectable()
 export class UserService {
@@ -14,19 +15,25 @@ export class UserService {
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<string | undefined> {
-    //TODO check new User
+  }: CreateAccountInput): Promise<{ ok: boolean; error?: string }> {
     try {
       const oldUser = await this.userRepository.findOne({ email });
       if (oldUser) {
-        // make Error User EXISTS!!
-        return 'THERE IS A USER WITH THAT EMAIL ALREADY';
+        return {
+          ok: false,
+          error: ErrorMessage.USER_EXIST_ERROR,
+        };
       }
-      //TODO if new User => create Account & Hashing PWD
-      //TODO if process done => return true else return Error
-      await this.userRepository.save({ email, password, role });
+      const user = this.userRepository.create({ email, password, role });
+      await this.userRepository.save(user);
     } catch (e) {
-      return "COULDN'T CREATE ACCOUNT";
+      return {
+        ok: false,
+        error: ErrorMessage.CREATE_USER_ERROR,
+      };
     }
+    return {
+      ok: true,
+    };
   }
 }
