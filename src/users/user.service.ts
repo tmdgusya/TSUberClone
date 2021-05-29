@@ -67,7 +67,7 @@ export class UserService {
         };
       }
 
-      const token = this.jwtService.sign({ id: user.id, email: user.email });
+      const token = this.jwtService.sign({ id: user.id });
 
       return {
         ok: true,
@@ -79,5 +79,9 @@ export class UserService {
         error,
       };
     }
+  }
+
+  async findById(id: number): Promise<User> {
+    return this.userRepository.findOne({ id });
   }
 }
