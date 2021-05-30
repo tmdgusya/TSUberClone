@@ -10,6 +10,7 @@ import { ErrorMessage } from 'src/error/error_message';
 import { Args, Mutation } from '@nestjs/graphql';
 import { LoginOutput, LoginInputType } from './dtos/login-account.dto';
 import { JwtService } from 'src/jwt/jwt.service';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -83,5 +84,14 @@ export class UserService {
 
   async findById(id: number): Promise<User> {
     return this.userRepository.findOne({ id });
+  }
+
+  async editProfile(
+    userId: number,
+    editProfileInput: EditProfileInput,
+  ): Promise<User> {
+    const user = await this.userRepository.findOne(userId);
+    user.changeProfile(editProfileInput.email, editProfileInput.password);
+    return await this.userRepository.save(user);
   }
 }

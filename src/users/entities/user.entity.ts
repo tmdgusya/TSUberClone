@@ -1,4 +1,4 @@
-import { Entity, Column, BeforeInsert } from 'typeorm';
+import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import {
   ObjectType,
@@ -42,6 +42,7 @@ export class User extends CoreEntity {
   role: UserRole;
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword(): Promise<void> {
     try {
       this.password = await bcrypt.hash(this.password, 10);
@@ -55,6 +56,15 @@ export class User extends CoreEntity {
       return await bcrypt.compare(password, this.password);
     } catch (error) {
       throw new InternalServerErrorException(ErrorMessage.LOGIN_ERROR);
+    }
+  }
+
+  changeProfile(email?: string, password?: string) {
+    if (email) {
+      this.email = email;
+    }
+    if (password) {
+      this.password = password;
     }
   }
 }
