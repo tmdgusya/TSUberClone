@@ -10,6 +10,8 @@ import { LoginOutput, LoginInputType } from './dtos/login-account.dto';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { ErrorMessage } from 'src/error/error_message';
 
 @Resolver(of => User)
 export class UserResolver {
@@ -44,7 +46,9 @@ export class UserResolver {
   }
 
   @Mutation(returns => LoginOutput)
-  async login(@Args('input') loginInputData: LoginInputType) {
+  async login(
+    @Args('input') loginInputData: LoginInputType,
+  ): Promise<LoginOutput> {
     try {
       return await this.userSerive.login(loginInputData);
     } catch (error) {
@@ -58,7 +62,29 @@ export class UserResolver {
   @Query(returns => User)
   @UseGuards(AuthGuard)
   me(@AuthUser() authUser: User) {
-    console.log(authUser);
     return authUser;
+  }
+
+  @Query(returns => UserProfileOutput)
+  @UseGuards(AuthGuard)
+  async userProfile(
+    @Args() userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    try {
+      const user = await this.userSerive.findById(userProfileInput.userId);
+      console.log(user);
+      if (!user) {
+        throw Error();
+      }
+      return {
+        ok: true,
+        user,
+      };
+    } catch (e) {
+      return {
+        error: ErrorMessage.USER_NOT_FOUND,
+        ok: false,
+      };
+    }
   }
 }
