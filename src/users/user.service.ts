@@ -11,11 +11,14 @@ import { Args, Mutation } from '@nestjs/graphql';
 import { LoginOutput, LoginInputType } from './dtos/login-account.dto';
 import { JwtService } from 'src/jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verfication } from './entities/verification.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Verfication)
+    private readonly verificationRepository: Repository<Verfication>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -34,6 +37,11 @@ export class UserService {
       }
       const user = this.userRepository.create({ email, password, role });
       await this.userRepository.save(user);
+      await this.verificationRepository.save(
+        this.verificationRepository.create({
+          user,
+        }),
+      );
     } catch (e) {
       return {
         ok: false,
@@ -50,7 +58,10 @@ export class UserService {
     @Args('input') { email, password }: LoginInputType,
   ): Promise<LoginOutput> {
     try {
-      const user = await this.userRepository.findOne({ email });
+      const user = await this.userRepository.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      );
 
       if (!user) {
         return {
@@ -88,10 +99,33 @@ export class UserService {
 
   async editProfile(
     userId: number,
-    editProfileInput: EditProfileInput,
+    { email, password }: EditProfileInput,
   ): Promise<User> {
     const user = await this.userRepository.findOne(userId);
-    user.changeProfile(editProfileInput.email, editProfileInput.password);
+    if (email) {
+      user.email = email;
+      user.verified = false;
+      await this.verificationRepository.save(
+        this.verificationRepository.create({ user }),
+      );
+    }
+    user.changeProfile(email, password);
     return await this.userRepository.save(user);
+  }
+
+  async verifyEmail(code: string): Promise<Boolean> {
+    try {
+      const verification = await this.verificationRepository.findOne(
+        { code },
+        { relations: ['user'] },
+      );
+      if (verification) {
+        verification.user.verified = true;
+        await this.userRepository.save(verification.user);
+        return true;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 }

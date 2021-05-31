@@ -13,6 +13,7 @@ import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { ErrorMessage } from 'src/error/error_message';
 import { EditProfileOutput, EditProfileInput } from './dtos/edit-profile.dto';
+import { VerifyEmailOutput, VerifyEmailInput } from './dtos/verify-email.dto';
 
 @Resolver(of => User)
 export class UserResolver {
@@ -97,6 +98,21 @@ export class UserResolver {
   ): Promise<EditProfileOutput> {
     try {
       await this.userSerive.editProfile(authUser.id, editProfileInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  @Mutation(returns => VerifyEmailOutput)
+  async verifyEmail(@Args('input') { code }: VerifyEmailInput) {
+    try {
+      await this.userSerive.verifyEmail(code);
       return {
         ok: true,
       };
