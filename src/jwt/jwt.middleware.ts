@@ -1,6 +1,6 @@
 import { NestMiddleware, Injectable, Inject } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { CONFIG_OPTIONS } from './jwt.constant';
+import { CONFIG_OPTIONS } from '../common/common.constant';
 import { JwtModuleOptions } from './jwt.interface';
 import { JwtService } from './jwt.service';
 import { UserService } from 'src/users/user.service';

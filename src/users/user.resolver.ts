@@ -11,7 +11,6 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
-import { ErrorMessage } from 'src/error/error_message';
 import { EditProfileOutput, EditProfileInput } from './dtos/edit-profile.dto';
 import { VerifyEmailOutput, VerifyEmailInput } from './dtos/verify-email.dto';
 
