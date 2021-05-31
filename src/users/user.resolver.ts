@@ -28,37 +28,14 @@ export class UserResolver {
   async createAccount(
     @Args('input') userDateInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
-    try {
-      const { ok, error } = await this.userSerive.createAccount(userDateInput);
-      if (error) {
-        return {
-          ok,
-          error,
-        };
-      }
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
-    return {
-      ok: true,
-    };
+    return await this.userSerive.createAccount(userDateInput);
   }
 
   @Mutation(returns => LoginOutput)
   async login(
     @Args('input') loginInputData: LoginInputType,
   ): Promise<LoginOutput> {
-    try {
-      return await this.userSerive.login(loginInputData);
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return await this.userSerive.login(loginInputData);
   }
 
   @Query(returns => User)
@@ -72,22 +49,7 @@ export class UserResolver {
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.userSerive.findById(userProfileInput.userId);
-      console.log(user);
-      if (!user) {
-        throw Error();
-      }
-      return {
-        ok: true,
-        user,
-      };
-    } catch (e) {
-      return {
-        error: ErrorMessage.USER_NOT_FOUND,
-        ok: false,
-      };
-    }
+    return await this.userSerive.findById(userProfileInput.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -96,31 +58,11 @@ export class UserResolver {
     @AuthUser() authUser: User,
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    try {
-      await this.userSerive.editProfile(authUser.id, editProfileInput);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return await this.userSerive.editProfile(authUser.id, editProfileInput);
   }
 
   @Mutation(returns => VerifyEmailOutput)
   async verifyEmail(@Args('input') { code }: VerifyEmailInput) {
-    try {
-      await this.userSerive.verifyEmail(code);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return await this.userSerive.verifyEmail(code);
   }
 }
