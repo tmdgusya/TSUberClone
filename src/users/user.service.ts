@@ -14,6 +14,7 @@ import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { Verfication } from './entities/verification.entity';
 import { UserProfileOutput } from './dtos/user-profile.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
     @InjectRepository(Verfication)
     private readonly verificationRepository: Repository<Verfication>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount({
@@ -39,10 +41,15 @@ export class UserService {
       }
       const user = this.userRepository.create({ email, password, role });
       await this.userRepository.save(user);
-      await this.verificationRepository.save(
+      const verification = await this.verificationRepository.save(
         this.verificationRepository.create({
           user,
         }),
+      );
+      this.mailService.sendVerificationEmail(
+        user.email,
+        user.email,
+        verification.code,
       );
     } catch (e) {
       return {
@@ -101,7 +108,6 @@ export class UserService {
       if (!user) {
         throw Error();
       }
-
       return {
         ok: true,
         user,
@@ -119,15 +125,24 @@ export class UserService {
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
+      console.log('?');
       const user = await this.userRepository.findOne(userId);
+      console.log('?');
       if (email) {
         user.email = email;
         user.verified = false;
-        await this.verificationRepository.save(
+        const verification = await this.verificationRepository.save(
           this.verificationRepository.create({ user }),
+        );
+        console.log('?');
+        this.mailService.sendVerificationEmail(
+          user.email,
+          user.email,
+          verification.code,
         );
       }
       user.changeProfile(email, password);
+      console.log('??');
     } catch (error) {
       return {
         ok: false,

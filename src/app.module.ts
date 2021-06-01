@@ -60,8 +60,6 @@ import { MailModule } from './mail/mail.module';
       fromEmail: process.env.MAILGUN_FORM_EMAIL,
     }),
     UsersModule,
-    CommonModule,
-    AuthModule,
   ],
   controllers: [],
   providers: [],
