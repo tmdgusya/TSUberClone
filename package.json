@@ -85,6 +85,11 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [
+      "node_modules",
+      ".entity.ts",
+      ".contants.ts"
+    ],
     "testEnvironment": "node"
   }
 }
