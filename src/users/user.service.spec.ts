@@ -120,6 +120,15 @@ describe('User Service Test', () => {
         ok: true,
       });
     });
+
+    it('should fail on exception', async () => {
+      userRepository.findOne.mockRejectedValue(new Error('Error Test'));
+      const result = await service.createAccount(defaultCreateArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: ErrorMessage.CREATE_USER_ERROR,
+      });
+    });
   });
   it.todo('login');
   it.todo('findById');
