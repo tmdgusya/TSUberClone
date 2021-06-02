@@ -164,10 +164,14 @@ export class UserService {
           ok: true,
         };
       }
+      return {
+        ok: true,
+        error: ErrorMessage.VERIFICATION_NOT_FOUND,
+      };
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: ErrorMessage.VERIFICATION_ERROR,
       };
     }
   }
