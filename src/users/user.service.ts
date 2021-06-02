@@ -104,10 +104,7 @@ export class UserService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.userRepository.findOne({ id });
-      if (!user) {
-        throw Error();
-      }
+      const user = await this.userRepository.findOneOrFail({ id });
       return {
         ok: true,
         user,
@@ -125,16 +122,13 @@ export class UserService {
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
-      console.log('?');
       const user = await this.userRepository.findOne(userId);
-      console.log('?');
       if (email) {
         user.email = email;
         user.verified = false;
         const verification = await this.verificationRepository.save(
           this.verificationRepository.create({ user }),
         );
-        console.log('?');
         this.mailService.sendVerificationEmail(
           user.email,
           user.email,
@@ -142,7 +136,6 @@ export class UserService {
         );
       }
       user.changeProfile(email, password);
-      console.log('??');
     } catch (error) {
       return {
         ok: false,
