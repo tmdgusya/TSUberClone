@@ -66,13 +66,4 @@ export class User extends CoreEntity {
       throw new InternalServerErrorException(ErrorMessage.LOGIN_ERROR);
     }
   }
-
-  changeProfile(email?: string, password?: string) {
-    if (email) {
-      this.email = email;
-    }
-    if (password) {
-      this.password = password;
-    }
-  }
 }

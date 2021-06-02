@@ -135,11 +135,14 @@ export class UserService {
           verification.code,
         );
       }
-      user.changeProfile(email, password);
+      if (password) {
+        user.password = password;
+      }
+      await this.userRepository.save(user);
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: ErrorMessage.EDIT_USER_ERROR,
       };
     }
     return {

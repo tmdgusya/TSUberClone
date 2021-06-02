@@ -7,6 +7,7 @@ import { JwtService } from 'src/jwt/jwt.service';
 import { MailService } from 'src/mail/mail.service';
 import { Repository } from 'typeorm';
 import { ErrorMessage } from 'src/error/error_message';
+import { async } from 'rxjs';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
@@ -214,7 +215,6 @@ describe('User Service Test', () => {
       userId: 1,
       input: {
         email: 'test@test.com',
-        password: '1234',
       },
     };
     const newVerification = {
@@ -244,6 +244,40 @@ describe('User Service Test', () => {
         newUser.email,
         newVerification.code,
       );
+    });
+
+    it('should change password', async () => {
+      const changeValue = {
+        password: 'new1234',
+      };
+      const editProfileArgs = {
+        userId: 1,
+        input: changeValue,
+      };
+      userRepository.findOne.mockResolvedValue({
+        password: 'old',
+      });
+      const result = await service.editProfile(
+        editProfileArgs.userId,
+        editProfileArgs.input,
+      );
+      expect(userRepository.save).toHaveBeenCalledTimes(1);
+      expect(userRepository.save).toHaveBeenCalledWith(editProfileArgs.input);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on Exception', async () => {
+      userRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.editProfile(
+        editProfileArgs.userId,
+        editProfileArgs.input,
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: ErrorMessage.EDIT_USER_ERROR,
+      });
     });
   });
 
