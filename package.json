@@ -88,7 +88,8 @@
     "coveragePathIgnorePatterns": [
       "node_modules",
       ".entity.ts",
-      ".contants.ts"
+      ".contants.ts",
+      ".dto.ts"
     ],
     "testEnvironment": "node"
   }
