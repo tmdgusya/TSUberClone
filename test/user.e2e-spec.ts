@@ -273,6 +273,61 @@ describe('UserModule (e2e)', () => {
         });
     });
   });
-  it.todo('editProfile');
+
+  describe('editProfile', () => {
+    it('should change email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `mutation {
+            editProfile(input: {
+              email: "roach_test@test.com"
+            }) {
+              ok
+              error
+            }
+          }
+        `,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+        });
+    });
+
+    it('should have new Email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `{
+          me {
+            email
+          }
+        }`,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                me: { ok, email },
+              },
+            },
+          } = res;
+          expect(email).toEqual('roach_test@test.com');
+        });
+    });
+  });
+
   it.todo('verifyEmail');
 });
