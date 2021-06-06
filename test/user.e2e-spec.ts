@@ -6,6 +6,7 @@ import * as request from 'supertest';
 import { ErrorMessage } from 'src/error/error_message';
 import { User } from 'src/users/entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import e from 'express';
 
 jest.mock('got', () => {
   return {
@@ -228,7 +229,50 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('me');
+  describe('me', () => {
+    it('should find my profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `{
+            me {
+              email
+            }
+          }`,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                me: { ok, email },
+              },
+            },
+          } = res;
+          expect(email).toEqual(userInfo.email);
+        });
+    });
+    it('shouild not allow logged out users', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `{
+            me {
+              email
+            }
+          }`,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: { errors },
+          } = res;
+          const message = errors[0].message;
+          expect(message).toEqual('Forbidden resource');
+        });
+    });
+  });
   it.todo('editProfile');
   it.todo('verifyEmail');
 });
