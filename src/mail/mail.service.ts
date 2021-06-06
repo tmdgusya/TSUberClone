@@ -15,7 +15,7 @@ export class MailService {
     templateName: string,
     userEmail: string,
     emailVars: EmailVar[],
-  ) {
+  ): Promise<Boolean> {
     const form = new FormData();
     form.append(
       'from',
@@ -26,10 +26,9 @@ export class MailService {
     form.append('template', templateName);
     emailVars.forEach(eVar => form.append(`v:${eVar.key}`, eVar.value));
     try {
-      const response = await got(
+      const response = await got.post(
         `https://api.mailgun.net/v3/${this.options.emailDomain}/messages`,
         {
-          method: 'POST',
           headers: {
             Authorization: `Basic ${Buffer.from(
               `api:${this.options.apiKey}`,
@@ -38,13 +37,13 @@ export class MailService {
           body: form,
         },
       );
-      console.log('!@#!@#!@: ' + response.body);
+      return true;
     } catch (e) {
-      console.log(e);
+      return false;
     }
   }
 
-  sendVerificationEmail(
+  public sendVerificationEmail(
     userEmail: string,
     email: string,
     verificationCode: string,
