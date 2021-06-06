@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import * as request from 'supertest';
 import { ErrorMessage } from 'src/error/error_message';
+import { User } from 'src/users/entities/user.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 jest.mock('got', () => {
   return {
@@ -22,6 +24,7 @@ const userInfo = {
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
+  let userRepository: Repository<User>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,6 +32,7 @@ describe('UserModule (e2e)', () => {
     }).compile();
 
     app = module.createNestApplication();
+    userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     await app.init();
   });
 
@@ -92,6 +96,7 @@ describe('UserModule (e2e)', () => {
         });
     });
   });
+
   describe('login', () => {
     it('should login with correct credentials', () => {
       return request(app.getHttpServer())
@@ -150,7 +155,79 @@ describe('UserModule (e2e)', () => {
         });
     });
   });
-  it.todo('userProfile');
+
+  describe('userProfile', () => {
+    const userId = 1;
+    let user: User;
+    beforeAll(async () => {
+      user = await userRepository.findOne({ id: userId });
+    });
+
+    it("should see a user's profile", () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `{
+            userProfile(userId:${userId}) {
+              ok
+              error
+              user{
+                email
+              }
+            }
+          }`,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                userProfile: {
+                  ok,
+                  error,
+                  user: { email },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+          expect(email).toEqual(userInfo.email);
+        });
+    });
+
+    it('should not find a profile', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('x-jwt', jwtToken)
+        .send({
+          query: `{
+            userProfile(userId:9999999) {
+              ok
+              error
+              user{
+                email
+              }
+            }
+          }`,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                userProfile: { ok, error, user },
+              },
+            },
+          } = res;
+          expect(ok).toBeFalsy();
+          expect(error).toEqual(ErrorMessage.USER_NOT_FOUND);
+          expect(user).toBeNull();
+        });
+    });
+  });
+
   it.todo('me');
   it.todo('editProfile');
   it.todo('verifyEmail');
