@@ -16,6 +16,9 @@ import { JwtMiddleWare } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verfication } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
+import { Restaurant } from './restaurants/entities/restaurants.entity';
+import { Category } from './restaurants/entities/category.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
   imports: [
@@ -47,7 +50,7 @@ import { MailModule } from './mail/mail.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Verfication],
+      entities: [User, Verfication, Restaurant, Category],
       migrations: ['src/migration/**/*.ts'],
       subscribers: ['src/subcribe/**/*.ts'],
     }),
@@ -61,6 +64,7 @@ import { MailModule } from './mail/mail.module';
       fromEmail: process.env.MAILGUN_FORM_EMAIL,
     }),
     UsersModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],
