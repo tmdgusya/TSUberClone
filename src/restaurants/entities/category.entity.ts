@@ -3,6 +3,7 @@ import { Entity, Column, OneToMany } from 'typeorm';
 import { IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Restaurant } from './restaurants.entity';
+import { type } from 'os';
 
 @InputType('CategoryInputType', { isAbstract: true })
 @ObjectType()
@@ -13,10 +14,15 @@ export class Category extends CoreEntity {
   @IsString()
   name: string;
 
-  @Field(type => String)
-  @Column()
+  @Field(type => String, { nullable: true })
+  @Column({ nullable: true })
   @IsString()
   coverImg: string;
+
+  @Field(type => String)
+  @Column({ unique: true })
+  @IsString()
+  slug: string;
 
   @Field(type => [Restaurant])
   @OneToMany(
